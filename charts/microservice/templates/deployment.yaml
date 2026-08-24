@@ -17,8 +17,43 @@ spec:
         image: "{{ .Values.appImage }}:{{ .Values.appVersion }}"
         ports:
         - containerPort: {{ .Values.containerPort }}
+
+         # Loop through all environment variables defined in the values file
+
         env:
-        {{- range .Values.containerEnvVars}}
+        {{- range .Values.containerEnvVars }}
         - name: {{ .name }}
           value: {{ .value | quote }}
-        {{- end}}
+        {{- end }}
+
+        # Add the liveness probe only when it is enabled in values.yaml
+        # Liveness checks whether the application is still healthy/running
+
+        {{- if .Values.livenessProbe.enabled }}
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.containerPort }}
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+        {{- end }}
+
+        # Add the readiness probe only when it is enabled in values.yaml
+        # Readiness checks whether the application is ready to receive traffic
+
+        {{- if .Values.readinessProbe.enabled }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.containerPort }}
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+        {{- end }}
+
+        # Convert the resources object from values.yaml into YAML
+        # and indent it correctly under the container
+
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}

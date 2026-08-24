@@ -19,7 +19,7 @@ containerEnvVars:
 - name: CHECKOUT_SERVICE_ADDR
   value: "checkoutservice:5050"
 - name: AD_SERVICE_ADDR
-  value: "adservice:955"
+  value: "adservice:9555"
 
 servicePort: 80
 serviceType: LoadBalancer
